@@ -1,42 +1,55 @@
-interface Form {
+export interface Form {
     username: string;
     password: string;
 }
 
-interface User {
-    username: string;
+export interface User {
+    name: string;
     password: string;
     token: string;
 }
+
 const api_url = process.env.REACT_APP_API_URL || "http://localhost:3000";
-const handleUserResponse = (user: User) => {
-    window.localStorage.setItem("token",user.token);
+const handleUserResponse = ({user}:{user:User}) => {
+    window.localStorage.setItem("token", user.token);
     return user;
 }
 
 export const Login = (form: Form) => {
-    fetch(`${api_url}/login`, {
+    return fetch(`${api_url}/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(form)
 
-    }).then(async r => handleUserResponse(await r.json()));
+    }).then(async r => {
+            if (r.ok) {
+                return handleUserResponse(await r.json())
+            }
+            return Promise.reject("Login failed" + r.statusText)
+        }
+    );
 }
 
 export const Register = (form: Form) => {
-    fetch(`${api_url}/register`, {
+    return fetch(`${api_url}/register`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(form)
     }).then(
-        async r => handleUserResponse(await r.json())
+        async r => {
+            if (r.ok) {
+                return handleUserResponse(await r.json())
+            }
+            return Promise.reject("Login failed" + r.statusText)
+        }
     )
 }
 
 export const Logout = () => {
     window.localStorage.removeItem("token");
+    return Promise.resolve();
 }
